@@ -111,8 +111,15 @@ def renderMap(board):
 				screen.blit(player, (j * 32 + indent, i * 32 + 250))
 
 
+#Map level
 mapNumber = 0
+#Algorithm to solve the game
 algorithm = "Breadth First Search"
+#Your scene states, including: 
+#init for choosing your map and algorithm
+#loading for displaying "loading scene"
+#executing for solving problem
+#playing for displaying the game
 sceneState = "init"
 loading = False
 
