@@ -15,8 +15,8 @@ def BFS_search(board, list_check_point):
         now_state = list_visit.pop(0)
         cur_pos = spf.find_position_player(now_state.board)
 
-       ''' 
-       time.sleep(1)
+        ''' 
+        time.sleep(1)
         clear = lambda: os.system('cls')
         clear()
         print_matrix(now_state.board)

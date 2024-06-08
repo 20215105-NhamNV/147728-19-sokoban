@@ -10,8 +10,8 @@ import astar
 
 TIME_OUT = 1800
 
-path_board = os.getcwd() + '\\Testcases'
-path_checkpoint = os.getcwd() + '\\Checkpoints'
+path_board = os.getcwd() + '\\..\\Testcases'
+path_checkpoint = os.getcwd() + '\\..\\Checkpoints'
 
 def get_boards():
     os.chdir(path_board)
