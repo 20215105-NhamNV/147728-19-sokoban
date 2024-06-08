@@ -21,7 +21,7 @@ def BFS_search(board, list_check_point):
         print_matrix(now_state.board)
         print("State visited : {}".format(len(list_state)))
         print("State in queue : {}".format(len(list_visit)))
-        '''
+        
 
         ''' GET LIST POSITION THAT PLAYER CAN MOVE TO '''
         list_can_move = spf.get_next_pos(now_state.board, cur_pos)
