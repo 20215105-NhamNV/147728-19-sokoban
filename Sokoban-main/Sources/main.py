@@ -1,3 +1,4 @@
+import numpy as np
 import os
 from colorama import Fore
 from colorama import Style
@@ -5,11 +6,11 @@ from copy import deepcopy
 import pygame
 from pygame.constants import KEYDOWN
 import bfs
+import dfs
 import astar
-
-
+import play
+import time
 TIME_OUT = 1800
-
 path_board = os.getcwd() + '\\..\\Testcases'
 path_checkpoint = os.getcwd() + '\\..\\Checkpoints'
 
@@ -23,7 +24,6 @@ def get_boards():
             # print(file)
             list_boards.append(board)
     return list_boards
-
 
 def get_check_points():
     os.chdir(path_checkpoint)
@@ -46,30 +46,43 @@ def format_row(row):
         elif row[i] == 'c':
             row[i] = '%'
 
-
+''' FORMAT THE INPUT CHECKPOINT TXT FILE '''
 def format_check_points(check_points):
     result = []
     for check_point in check_points:
         result.append((check_point[0], check_point[1]))
     return result
 
-
+''' READ A SINGLE TESTCASE TXT FILE '''
 def get_board(path):
     result = np.loadtxt(f"{path}", dtype=str, delimiter=',')
     for row in result:
         format_row(row)
     return result
 
+''' READ A SINGLE CHECKPOINT TXT FILE '''
 def get_pair(path):
     result = np.loadtxt(f"{path}", dtype=int, delimiter=',')
     return result
 
-
+'''
+//========================//
+//      DECLARE AND       //
+//  INITIALIZE MAPS AND   //
+//      CHECK POINTS      //
+//========================//
+'''
 maps = get_boards()
 check_points = get_check_points()
 
 
-
+'''
+//========================//
+//         PYGAME         //
+//     INITIALIZATIONS    //
+//                        //
+//========================//
+'''
 pygame.init()
 pygame.font.init()
 screen = pygame.display.set_mode((640, 640))
@@ -77,7 +90,9 @@ pygame.display.set_caption('Sokoban')
 clock = pygame.time.Clock()
 BACKGROUND = (0, 0, 0)
 WHITE = (255, 255, 255)
-
+'''
+GET SOME ASSETS
+'''
 assets_path = os.getcwd() + "\\..\\Assets"
 os.chdir(assets_path)
 player = pygame.image.load(os.getcwd() + '\\player.png')
@@ -110,19 +125,12 @@ def renderMap(board):
 			if board[i][j] == '@':
 				screen.blit(player, (j * 32 + indent, i * 32 + 250))
 
-
-#Map level
 mapNumber = 0
-#Algorithm to solve the game
-algorithm = "Breadth First Search"
-#Your scene states, including: 
-#init for choosing your map and algorithm
-#loading for displaying "loading scene"
-#executing for solving problem
-#playing for displaying the game
+algorithm = "Play"
 sceneState = "init"
 loading = False
 
+''' SOKOBAN FUNCTION '''
 def sokoban():
 	running = True
 	global sceneState
@@ -133,16 +141,25 @@ def sokoban():
 	stateLenght = 0
 	currentState = 0
 	found = True
-
+	curren_board = None
+	list_board = []
+ 
 	while running:
 		screen.blit(init_background, (0, 0))
 		if sceneState == "init":
 			initGame(maps[mapNumber])
 		if sceneState == "executing":
 			list_check_point = check_points[mapNumber]
-			if algorithm == "Breadth First Search":
+			if algorithm == "Play":
+				time.sleep(0.5)
+				print("Start")
+				curren_board = play.Play(maps[mapNumber], list_check_point)
+			elif algorithm == "Breadth First Search":
 				print("BFS")
 				list_board = bfs.BFS_search(maps[mapNumber], list_check_point)
+			elif algorithm == "Deep First Search":
+				print("DFS")
+				list_board = dfs.DFS_search(maps[mapNumber], list_check_point)
 			else:
 				print("AStar")
 				list_board = astar.AStart_Search(maps[mapNumber], list_check_point)
@@ -150,6 +167,8 @@ def sokoban():
 				sceneState = "playing"
 				stateLenght = len(list_board[0])
 				currentState = 0
+			elif algorithm == "Play":
+				sceneState = "playing"
 			else:
 				sceneState = "end"
 				found = False
@@ -158,16 +177,25 @@ def sokoban():
 			sceneState = "executing"
 		if sceneState == "end":
 			if found:
-				foundGame(list_board[0][stateLenght - 1])
+				if len(list_board) > 0:
+					foundGame(list_board[0][stateLenght - 1])
+				else:
+					foundGame(curren_board[0])
 			else:
 				notfoundGame()
 		if sceneState == "playing":
-			clock.tick(2)
-			renderMap(list_board[0][currentState])
-			currentState = currentState + 1
-			if currentState == stateLenght:
-				sceneState = "end"
-				found = True
+			if algorithm == "Play":
+				renderMap(curren_board[0])
+				if curren_board[1]:
+					sceneState = "end"
+					found = True
+			else:
+				clock.tick(10)
+				renderMap(list_board[0][currentState])
+				currentState = currentState + 1
+				if currentState == stateLenght:
+					sceneState = "end"
+					found = True
 		#Check event when you press key board
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -181,21 +209,40 @@ def sokoban():
 				if event.key == pygame.K_LEFT and sceneState == "init":
 					if mapNumber > 0:
 						mapNumber = mapNumber - 1
-				#Press ENTER key board to select level map and algorithm
+				if event.key == pygame.K_SPACE and sceneState == "init":
+					if algorithm == "Play":
+						algorithm = "Breadth First Search"
+					elif algorithm == "Breadth First Search":
+						algorithm = "Deep First Search"
+					elif algorithm == "Deep First Search":
+						algorithm = "A Star Search"
+					else:
+						algorithm = "Play"
 				if event.key == pygame.K_RETURN:
 					if sceneState == "init":
 						sceneState = "loading"
-					if sceneState == "end":
+					elif sceneState == "end":
 						sceneState = "init"
-				#Press SPACE key board to switch algorithm
-				if event.key == pygame.K_SPACE and sceneState == "init":
-					if algorithm == "Breadth First Search":
-						algorithm = "A Star Search"
-					else:
-						algorithm = "Breadth First Search"
+				if event.key == pygame.K_ESCAPE:
+					sceneState = "init"
+				if event.key == pygame.K_w:
+					if algorithm == "Play" and sceneState == "playing":
+						curren_board = play.move(curren_board[0],'w')
+				if event.key == pygame.K_s:
+					if algorithm == "Play" and sceneState == "playing":
+						curren_board = play.move(curren_board[0],'s')
+				if event.key == pygame.K_a:
+					if algorithm == "Play" and sceneState == "playing":
+						curren_board = play.move(curren_board[0],'a')
+				if event.key == pygame.K_d:
+					if algorithm == "Play" and sceneState == "playing":
+						curren_board = play.move(curren_board[0],'d')
+				
 		pygame.display.flip()
 	pygame.quit()
 
+''' DISPLAY MAIN SCENE '''
+#DISPLAY INITIAL SCENE
 def initGame(map):
 	titleSize = pygame.font.Font('gameFont.ttf', 60)
 	titleText = titleSize.render('Among-koban', True, WHITE)
@@ -221,6 +268,7 @@ def initGame(map):
 	screen.blit(algorithmText, algorithmRect)
 	renderMap(map)
 
+''' LOADING SCENE '''
 #DISPLAY LOADING SCENE
 def loadingGame():
 	screen.blit(loading_background, (0, 0))
@@ -270,3 +318,4 @@ def main():
 
 if __name__ == "__main__":
 	main()
+
