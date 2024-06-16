@@ -4,52 +4,40 @@ from queue import PriorityQueue
 
 def AStart_Search(board, list_check_point):
     start_time = time.time()
-   
-    if spf.check_win(board,list_check_point):
-        print("Found win")
-        return [board]
-   
-    start_state = spf.state(board, None, list_check_point)
+    spf.spfInit(board,list_check_point)
+    board_ = spf.format(board)
+    start_state = spf.state(board_, None)
     list_state = [start_state]
-
+    list_board = [board_]
     heuristic_queue = PriorityQueue()
     heuristic_queue.put(start_state)
-
     while not heuristic_queue.empty():
         now_state = heuristic_queue.get()
-        
-        cur_pos = spf.find_position_player(now_state.board)
- 
-        list_can_move = spf.get_next_pos(now_state.board, cur_pos)
-      
-        for next_pos in list_can_move:
-           
-            new_board = spf.move(now_state.board, next_pos, cur_pos, list_check_point)
-            
+        list_next_board = spf.get_next_boards(now_state.board)
+        for next_board in list_next_board:
+            new_board = next_board
+            if spf.is_board_can_not_win(new_board):
+                continue
             if spf.is_board_exist(new_board, list_state):
                 continue
-            
-            if spf.is_board_can_not_win(new_board, list_check_point):
-                continue
-            
-            if spf.is_all_boxes_stuck(new_board, list_check_point):
-                continue
-
-            new_state = spf.state(new_board, now_state, list_check_point)
-           
-            if spf.check_win(new_board, list_check_point):
-                print("Found win")
-                return (new_state.get_line(), len(list_state))
-        
+            list_board.append(new_board)
+            new_state = spf.state(new_board, now_state)
             list_state.append(new_state)
+            if spf.check_win(new_board):
+                print("Found win")
+                end_time = time.time()
+                print(end_time - start_time)
+                print(len(list_state))
+                return (new_state.get_line_(), len(list_state))
             heuristic_queue.put(new_state)
-
             end_time = time.time()
             if end_time - start_time > spf.TIME_OUT:
                 return []
         end_time = time.time()
         if end_time - start_time > spf.TIME_OUT:
             return []
-  
     print("Not Found")
+    end_time = time.time()
+    print(end_time - start_time)
+    print(len(list_state))
     return []

@@ -71,17 +71,17 @@ def have_box_can_not_move(board,boxes):
         dr = board[x-1][y+1]
         dl = board[x-1][y-1]
         if u == '#':
-            if l == '$' and dl in ['#', '$']: return True
-            if r == '$' and dr in ['#', '$']: return True
+            if l == '$' and dl == '#': return True
+            if r == '$' and dr == '#': return True
         if d == '#':
-            if l == '$' and ul in ['#', '$']: return True
-            if r == '$' and ur in ['#', '$']: return True
+            if l == '$' and ul == '#': return True
+            if r == '$' and ur == '#': return True
         if l == '#':
-            if u == '$' and ur in ['#', '$']: return True
-            if d == '$' and dr in ['#', '$']: return True
+            if u == '$' and ur == '#': return True
+            if d == '$' and dr == '#': return True
         if r == '#':
-            if u == '$' and ul in ['#', '$']: return True
-            if d == '$' and dl in ['#', '$']: return True
+            if u == '$' and ul == '#': return True
+            if d == '$' and dl == '#': return True
         if u in ['#', '$']:
             if l in ['#', '$'] and ul in ['#', '$']: return True
             if r in ['#', '$'] and ur in ['#', '$']: return True
@@ -93,9 +93,8 @@ def have_box_can_not_move(board,boxes):
             if d in ['#', '$'] and dl in ['#', '$']: return True
         if r in ['#', '$']:
             if u in ['#', '$'] and ur in ['#', '$']: return True
-            if d in ['#', '$'] and ul in ['#', '$']: return True
+            if d in ['#', '$'] and dr in ['#', '$']: return True
     return False
-
 def assign_matrix(board):
     return [[board[x][y] for y in range(len(board[0]))] for x in range(len(board))]
 
